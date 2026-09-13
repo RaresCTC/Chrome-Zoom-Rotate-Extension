@@ -1,0 +1,12 @@
+{
+    "manifest_version": 3,
+    "name": "Zoom & Rotate",
+    "version": "1.0",
+    "description": "A Chrome extension that allows you to zoom and rotate images only using the Mouse Wheel and the Q key.",
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"]
+        }
+    ]
+}
