@@ -11,7 +11,6 @@ let panX = 0;
 let panY = 0;
 
 
-
 document.addEventListener("mousemove", function(event) {
     if (event.target.tagName === "IMG") {
         activeImage = event.target;
