@@ -138,8 +138,7 @@ function updateImage() {
         return;
     }
 
-    // Make the top-left corner the point of transformation
-    activeImage.style.transformOrigin = "0 0";
+    activeImage.style.transformOrigin = "center center";
 
     activeImage.style.transform =
         `translate(${panX}px, ${panY}px) scale(${zoom}) rotate(${rotation}deg)`;
