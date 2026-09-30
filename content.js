@@ -1,3 +1,8 @@
+(() => {
+if (!document.contentType.startsWith("image/")) {
+    return;
+}
+
 let activeImage = null;
 
 let rotation = 0;
@@ -9,7 +14,6 @@ let panY = 0;
 let isDragging = false;
 let startX = 0;
 let startY = 0;
-
 
 document.addEventListener("mousemove", function(event) {
     if (event.target.tagName === "IMG") {
@@ -143,3 +147,4 @@ function updateImage() {
     activeImage.style.cursor =
         zoom > 1 ? "grab" : "default";
 }
+})();
