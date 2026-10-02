@@ -1,8 +1,3 @@
-(() => {
-if (!document.contentType.startsWith("image/")) {
-    return;
-}
-
 let activeImage = null;
 
 let rotation = 0;
@@ -14,19 +9,18 @@ let panY = 0;
 let isDragging = false;
 let startX = 0;
 let startY = 0;
+let moved = false;
 
-document.addEventListener("mousemove", function(event) {
+const isImageDocument = document.contentType.startsWith("image/");
+
+document.addEventListener("mousemove", function (event) {
     if (event.target.tagName === "IMG") {
         activeImage = event.target;
     }
 });
 
-
-
-document.addEventListener("keydown", function(event) {
-
+document.addEventListener("keydown", function (event) {
     if (event.key.toLowerCase() === "q" && activeImage) {
-
         rotation += 90;
 
         if (rotation >= 360) {
@@ -37,48 +31,53 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
-
-
-document.addEventListener("wheel", function(event) {
-
+document.addEventListener("wheel", function (event) {
     if (event.target.tagName !== "IMG") {
+        return;
+    }
+
+    activeImage = event.target;
+
+    if (zoom <= 1 && event.deltaY > 0) {
         return;
     }
 
     event.preventDefault();
 
-    activeImage = event.target;
-
     const oldZoom = zoom;
 
-    
     if (event.deltaY < 0) {
         zoom += 0.1;
     } else {
         zoom -= 0.1;
     }
 
-  
-    zoom = Math.max(0.2, Math.min(5, zoom));
+    zoom = Math.max(1, Math.min(5, zoom));
 
-    
-    const rect = activeImage.getBoundingClientRect();
+    const currentTransform = activeImage.style.transform;
+    activeImage.style.transform = "none";
+    const base = activeImage.getBoundingClientRect();
+    activeImage.style.transform = currentTransform;
 
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const centerX = base.left + base.width / 2;
+    const centerY = base.top + base.height / 2;
 
-   
-    panX -= mouseX * (zoom - oldZoom);
-    panY -= mouseY * (zoom - oldZoom);
+    const dx = event.clientX - centerX;
+    const dy = event.clientY - centerY;
+
+    const ratio = zoom / oldZoom;
+    panX = dx - ratio * (dx - panX);
+    panY = dy - ratio * (dy - panY);
+
+    if (zoom === 1) {
+        panX = 0;
+        panY = 0;
+    }
 
     updateImage();
-
 }, { passive: false });
 
-
-
-document.addEventListener("mousedown", function(event) {
-
+document.addEventListener("mousedown", function (event) {
     if (event.button !== 0) {
         return;
     }
@@ -88,8 +87,8 @@ document.addEventListener("mousedown", function(event) {
     }
 
     activeImage = event.target;
-
     isDragging = true;
+    moved = false;
 
     startX = event.clientX;
     startY = event.clientY;
@@ -99,19 +98,15 @@ document.addEventListener("mousedown", function(event) {
     event.preventDefault();
 });
 
-
-
-document.addEventListener("mousemove", function(event) {
-
+document.addEventListener("mousemove", function (event) {
     if (!isDragging) {
         return;
     }
 
-    const deltaX = event.clientX - startX;
-    const deltaY = event.clientY - startY;
+    moved = true;
 
-    panX += deltaX;
-    panY += deltaY;
+    panX += event.clientX - startX;
+    panY += event.clientY - startY;
 
     startX = event.clientX;
     startY = event.clientY;
@@ -119,10 +114,7 @@ document.addEventListener("mousemove", function(event) {
     updateImage();
 });
 
-
-
-document.addEventListener("mouseup", function(event) {
-
+document.addEventListener("mouseup", function (event) {
     if (event.button === 0) {
         isDragging = false;
 
@@ -132,8 +124,20 @@ document.addEventListener("mouseup", function(event) {
     }
 });
 
-function updateImage() {
+document.addEventListener("click", function (event) {
+    if (event.target.tagName !== "IMG") {
+        return;
+    }
 
+    if (isImageDocument || moved) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }
+
+    moved = false;
+}, true);
+
+function updateImage() {
     if (!activeImage) {
         return;
     }
@@ -143,7 +147,7 @@ function updateImage() {
     activeImage.style.transform =
         `translate(${panX}px, ${panY}px) scale(${zoom}) rotate(${rotation}deg)`;
 
-    activeImage.style.cursor =
-        zoom > 1 ? "grab" : "default";
+    if (!isDragging) {
+        activeImage.style.cursor = zoom > 1 ? "grab" : "default";
+    }
 }
-})();
