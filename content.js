@@ -20,15 +20,32 @@ document.addEventListener("mousemove", function (event) {
 });
 
 document.addEventListener("keydown", function (event) {
-    if (event.key.toLowerCase() === "q" && activeImage) {
-        rotation += 90;
-
-        if (rotation >= 360) {
-            rotation = 0;
-        }
-
-        updateImage();
+    if (event.key.toLowerCase() !== "q" || !activeImage) {
+        return;
     }
+
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+        return;
+    }
+
+    const target = event.target;
+    const isTyping =
+        target.isContentEditable ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT";
+
+    if (isTyping) {
+        return;
+    }
+
+    rotation += 90;
+
+    if (rotation >= 360) {
+        rotation = 0;
+    }
+
+    updateImage();
 });
 
 document.addEventListener("wheel", function (event) {
