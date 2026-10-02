@@ -11,7 +11,31 @@ let startX = 0;
 let startY = 0;
 let moved = false;
 
+let rotateKey = "q";
+let resetKey = "r";
+
 const isImageDocument = document.contentType.startsWith("image/");
+
+if (typeof chrome !== "undefined" && chrome.storage) {
+    chrome.storage.local.get({ rotateKey: "q", resetKey: "r" }, function (settings) {
+        rotateKey = settings.rotateKey;
+        resetKey = settings.resetKey;
+    });
+
+    chrome.storage.onChanged.addListener(function (changes, area) {
+        if (area !== "local") {
+            return;
+        }
+
+        if (changes.rotateKey) {
+            rotateKey = changes.rotateKey.newValue;
+        }
+
+        if (changes.resetKey) {
+            resetKey = changes.resetKey.newValue;
+        }
+    });
+}
 
 document.addEventListener("mousemove", function (event) {
     if (event.target.tagName === "IMG") {
@@ -20,7 +44,15 @@ document.addEventListener("mousemove", function (event) {
 });
 
 document.addEventListener("keydown", function (event) {
-    if (event.key.toLowerCase() !== "q" || !activeImage) {
+    if (!activeImage) {
+        return;
+    }
+
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    const isRotate = key === rotateKey;
+    const isReset = key === resetKey;
+
+    if (!isRotate && !isReset) {
         return;
     }
 
@@ -39,13 +71,12 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
-    rotation += 90;
-
-    if (rotation >= 360) {
-        rotation = 0;
+    if (isRotate) {
+        rotation = (rotation + 90) % 360;
+        updateImage();
+    } else {
+        resetImage();
     }
-
-    updateImage();
 });
 
 document.addEventListener("wheel", function (event) {
@@ -61,23 +92,22 @@ document.addEventListener("wheel", function (event) {
 
     event.preventDefault();
 
-    const oldZoom = zoom;
+    let delta = event.deltaY;
 
-    if (event.deltaY < 0) {
-        zoom += 0.1;
-    } else {
-        zoom -= 0.1;
+    if (event.deltaMode === 1) {
+        delta *= 33;
+    } else if (event.deltaMode === 2) {
+        delta *= 400;
     }
 
-    zoom = Math.max(1, Math.min(5, zoom));
+    delta = Math.max(-300, Math.min(300, delta));
 
-    const currentTransform = activeImage.style.transform;
-    activeImage.style.transform = "none";
-    const base = activeImage.getBoundingClientRect();
-    activeImage.style.transform = currentTransform;
+    const oldZoom = zoom;
+    zoom = Math.max(1, Math.min(5, zoom * Math.exp(-delta * 0.001)));
 
-    const centerX = base.left + base.width / 2;
-    const centerY = base.top + base.height / 2;
+    const rect = activeImage.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2 - panX;
+    const centerY = rect.top + rect.height / 2 - panY;
 
     const dx = event.clientX - centerX;
     const dy = event.clientY - centerY;
@@ -153,6 +183,20 @@ document.addEventListener("click", function (event) {
 
     moved = false;
 }, true);
+
+function resetImage() {
+    rotation = 0;
+    zoom = 1;
+    panX = 0;
+    panY = 0;
+    isDragging = false;
+
+    if (activeImage) {
+        activeImage.style.transform = "";
+        activeImage.style.transformOrigin = "";
+        activeImage.style.cursor = "default";
+    }
+}
 
 function updateImage() {
     if (!activeImage) {

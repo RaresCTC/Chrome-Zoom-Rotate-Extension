@@ -1,13 +1,27 @@
 {
     "manifest_version": 3,
     "name": "Zoom & Rotate",
-    "version": "5.1.2",
-    "description": "A Chrome extension that allows you to zoom and rotate images only using the Mouse Wheel and the Q key.",
+    "version": "5.5.0",
+    "description": "Zoom, pan and rotate images with the mouse wheel and keyboard shortcuts of your choice.",
+
     "icons": {
         "16": "icon16.png",
         "48": "icon48.png",
         "128": "icon128.png"
     },
+
+    "permissions": ["storage"],
+
+    "action": {
+        "default_title": "Zoom & Rotate settings",
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
+
     "content_scripts": [
         {
             "matches": ["<all_urls>"],

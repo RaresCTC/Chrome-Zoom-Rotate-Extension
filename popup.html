@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Zoom & Rotate</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <header>
+        <img src="icon48.png" alt="">
+        <div>
+            <h1>Zoom &amp; Rotate</h1>
+            <p>Choose your shortcuts</p>
+        </div>
+    </header>
+
+    <div class="row">
+        <div class="label">
+            <strong>Rotate</strong>
+            <span>Turns the image 90° clockwise</span>
+        </div>
+        <button id="rotateKey" class="key" type="button"></button>
+    </div>
+
+    <div class="row">
+        <div class="label">
+            <strong>Reset</strong>
+            <span>Back to normal size and angle</span>
+        </div>
+        <button id="resetKey" class="key" type="button"></button>
+    </div>
+
+    <p id="message" class="message"></p>
+
+    <footer>
+        <span>Scroll to zoom · drag to pan</span>
+        <button id="defaults" class="link" type="button">Restore defaults</button>
+    </footer>
+
+    <script src="popup.js"></script>
+</body>
+</html>
